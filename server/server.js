@@ -28,20 +28,35 @@ app.use(express.static('server/public'));
 
 
 app.get('/artist', (req, res) => {
-    console.log(`In /songs GET`);
-    res.send(artistList);
+    console.log(`In /artist GET`);
+    const queryText = `SELECT * FROM "artist" ORDER BY "birthdate";`
+    pool.query(queryText).then((result) => {
+        res.send(result.rows);
+    }).catch((error) => {
+        console.log(error);
+        res.sendStatus(500);
+    });
 });
 
 app.post('/artist', (req, res) => {
-    artistList.push(req.body);
-    res.sendStatus(201);
+    console.log(req.body);
+    const queryText = `
+    INSERT INTO "artist" ("name", "birthdate")
+    VALUES ($1, $2);`
+
+    pool.query(queryText, [req.body.name, req.body.birthdate])
+    .then((result) => {
+        res.sendStatus(201);
+    }).catch((error) => {
+        console.log(error);
+        res.sendStatus(500);
+    });
 });
 
 app.get('/song', (req, res) => {
     console.log(`In /song GET`);
     const queryText = `SELECT * FROM "song" ORDER BY "title";`
     pool.query(queryText).then((result) => {
-        console.log(result);
         res.send(result.rows);
     }).catch((error) => {
         console.log(error);
@@ -51,8 +66,6 @@ app.get('/song', (req, res) => {
 
 app.post('/song', (req, res) => {
     console.log(req.body);
-    // send body to db
-    // prepared statement
     const queryText = `
     INSERT INTO "song" ("title", "length", "released")
     VALUES ($1, $2, $3);`
