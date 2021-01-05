@@ -38,13 +38,32 @@ app.post('/artist', (req, res) => {
 });
 
 app.get('/song', (req, res) => {
-    console.log(`In /songs GET`);
-    res.send(songList);
+    console.log(`In /song GET`);
+    const queryText = `SELECT * FROM "song" ORDER BY "title";`
+    pool.query(queryText).then((result) => {
+        console.log(result);
+        res.send(result.rows);
+    }).catch((error) => {
+        console.log(error);
+        res.sendStatus(500);
+    });
 });
 
 app.post('/song', (req, res) => {
-    songList.push(req.body);
-    res.sendStatus(201);
+    console.log(req.body);
+    // send body to db
+    // prepared statement
+    const queryText = `
+    INSERT INTO "song" ("title", "length", "released")
+    VALUES ($1, $2, $3);`
+
+    pool.query(queryText, [req.body.title, req.body.length, req.body.released])
+    .then((result) => {
+        res.sendStatus(201);
+    }).catch((error) => {
+        console.log(error);
+        res.sendStatus(500);
+    });
 });
 
 
